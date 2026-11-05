@@ -1,0 +1,130 @@
+name: placemate
+
+x-backend-env: &backend-env
+  ENV: production
+  DEBUG: "false"
+  DEMO_MODE: "true"
+  DATABASE_URL: postgresql+psycopg://placemate:placemate@postgres:5432/placemate
+  REDIS_URL: redis://redis:6379/0
+  JWT_SECRET: ${JWT_SECRET:-local-compose-only-change-me-4f8a2c6e9b1d3f5a7c0e2b4d6f8a1c3e}
+  CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+  FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+  API_PUBLIC_URL: ${API_PUBLIC_URL:-http://localhost:8000}
+  AUTH_GOOGLE_CLIENT_ID: ${AUTH_GOOGLE_CLIENT_ID:-}
+  AUTH_GOOGLE_CLIENT_SECRET: ${AUTH_GOOGLE_CLIENT_SECRET:-}
+  LLM_PROVIDER: ${LLM_PROVIDER:-mock}
+  LLM_API_KEY: ${LLM_API_KEY:-}
+  GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-}
+  GOOGLE_CLOUD_PROJECT: ${GOOGLE_CLOUD_PROJECT:-}
+  GOOGLE_CLOUD_LOCATION: ${GOOGLE_CLOUD_LOCATION:-us-central1}
+  LLM_MODEL_CHEAP: ${LLM_MODEL_CHEAP:-gemini-2.0-flash-001}
+  LLM_MODEL_SCORING: ${LLM_MODEL_SCORING:-gemini-2.5-pro}
+  LLM_EMBEDDING_MODEL: ${LLM_EMBEDDING_MODEL:-text-embedding-004}
+  EMBEDDING_DIM: ${EMBEDDING_DIM:-768}
+  STORAGE_BACKEND: s3
+  STORAGE_ENDPOINT: http://minio:9000
+  STORAGE_BUCKET: ${STORAGE_BUCKET:-placemate-resumes}
+  STORAGE_KEY: ${STORAGE_KEY:-placemate}
+  STORAGE_SECRET: ${STORAGE_SECRET:-placemate-minio-local-secret}
+  STORAGE_REGION: ${STORAGE_REGION:-auto}
+  STORAGE_SECURE: "false"
+  MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-5}
+  PER_USER_MONTHLY_BUDGET: ${PER_USER_MONTHLY_BUDGET:-1.50}
+  SENTRY_DSN: ${SENTRY_DSN:-}
+  POSTHOG_KEY: ${POSTHOG_KEY:-}
+  LOG_LEVEL: INFO
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: placemate
+      POSTGRES_PASSWORD: placemate
+      POSTGRES_DB: placemate
+    ports: ["5432:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U placemate -d placemate"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports: ["6379:6379"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  minio:
+    image: minio/minio:RELEASE.2024-12-18T13-15-44Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${STORAGE_KEY:-placemate}
+      MINIO_ROOT_PASSWORD: ${STORAGE_SECRET:-placemate-minio-local-secret}
+    ports: ["9000:9000", "9001:9001"]
+    volumes:
+      - miniodata:/data
+
+  api:
+    build:
+      context: ./backend
+    environment: *backend-env
+    command: ["./start.sh"]
+    ports: ["8000:8000"]
+    volumes:
+      - ./scripts:/app/scripts:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  worker:
+    build:
+      context: ./backend
+    environment: *backend-env
+    command: ["arq", "app.workers.worker.WorkerSettings"]
+    volumes:
+      - ./scripts:/app/scripts:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_started
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000/api/v1}
+        NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-ws://localhost:8000/api/v1}
+        NEXT_PUBLIC_DEMO_MODE: ${NEXT_PUBLIC_DEMO_MODE:-true}
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000/api/v1}
+      NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-ws://localhost:8000/api/v1}
+      NEXT_PUBLIC_DEMO_MODE: ${NEXT_PUBLIC_DEMO_MODE:-true}
+    ports: ["3000:3000"]
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  redisdata:
+  miniodata:

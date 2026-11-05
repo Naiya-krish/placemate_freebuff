@@ -1,0 +1,40 @@
+{
+  "prompt_set_version": "v1",
+  "prompts": {
+    "resume_parse": {
+      "version": "v1",
+      "file": "v1/resume_parse.md",
+      "tier": "cheap",
+      "temperature": 0.0,
+      "max_tokens": 2200
+    },
+    "resume_analysis": {
+      "version": "v1",
+      "file": "v1/resume_analysis.md",
+      "tier": "cheap",
+      "temperature": 0.2,
+      "max_tokens": 1800
+    },
+    "interview_question": {
+      "version": "v1",
+      "file": "v1/interview_question.md",
+      "tier": "cheap",
+      "temperature": 0.5,
+      "max_tokens": 300
+    },
+    "interview_followup": {
+      "version": "v1",
+      "file": "v1/interview_followup.md",
+      "tier": "cheap",
+      "temperature": 0.5,
+      "max_tokens": 300
+    },
+    "scoring": {
+      "version": "v1",
+      "file": "v1/scoring.md",
+      "tier": "scoring",
+      "temperature": 0.2,
+      "max_tokens": 1400
+    }
+  }
+}

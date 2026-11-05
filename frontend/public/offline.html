@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Offline · PlaceMate</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        background: radial-gradient(circle at 50% 0%, #1a1530 0%, #07070d 55%);
+        color: #eef0f6;
+        font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+        padding: 24px;
+      }
+      .card {
+        max-width: 420px;
+        border: 1px solid #262636;
+        background: #101018;
+        border-radius: 24px;
+        padding: 28px;
+        box-shadow: 0 30px 80px -40px rgba(124, 92, 255, 0.8);
+      }
+      .mark {
+        width: 44px; height: 44px; border-radius: 14px;
+        background: linear-gradient(135deg, #7c5cff, #22d3ee);
+        display: grid; place-items: center; font-weight: 800; margin-bottom: 18px;
+      }
+      h1 { font-size: 20px; margin: 0 0 8px; letter-spacing: -0.02em; }
+      p { color: #9ea0b3; font-size: 14px; line-height: 1.6; margin: 0; }
+      a {
+        display: inline-block; margin-top: 20px; padding: 10px 16px;
+        border-radius: 12px; color: white; text-decoration: none; font-size: 13px; font-weight: 700;
+        background: linear-gradient(135deg, #7c5cff, #22d3ee);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="mark">P</div>
+      <h1>You are offline</h1>
+      <p>
+        Your saved PlaceMate shell is still here, but the API and your interview room need a
+        connection. Reconnect and your progress will sync.
+      </p>
+      <a href="/dashboard">Try again</a>
+    </div>
+  </body>
+</html>

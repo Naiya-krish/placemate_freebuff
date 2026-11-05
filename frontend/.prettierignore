@@ -1,0 +1,6 @@
+.next
+node_modules
+coverage
+playwright-report
+public/sw.js
+package-lock.json

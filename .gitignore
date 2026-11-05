@@ -1,0 +1,57 @@
+# --- secrets ---
+.env
+.env.local
+.env.*.local
+!.env.example
+*.pem
+*.key
+!**/public/*.key
+backend/credentials/*.json
+
+# --- python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+coverage.xml
+backend/storage/
+uploads/
+
+# --- node ---
+node_modules/
+.next/
+out/
+build/
+dist/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+frontend/test-results/
+frontend/playwright-report/
+frontend/blob-report/
+
+# --- tooling / OS ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+*.sqlite3-shm
+*.sqlite3-wal
+*.sqlite3-journal
+test_*.db
+
+# --- generated reports ---
+artifacts/
+*.pdf.tmp
